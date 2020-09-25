@@ -251,12 +251,15 @@ int LinuxParser::RunningProcesses() {
 string LinuxParser::Command(int pid) {
   string line;
   std::ifstream filestream(kProcDirectory + std::to_string(pid) + kCmdlineFilename);
-  if (filestream.is_open()) {
-    if (std::getline(filestream, line)) {
-      return line; 
-    }
-  }
-  return string(); 
+  filestream.is_open();
+  std::getline(filestream, line);
+  return line; 
+  // if (filestream.is_open()) {
+  //   if (std::getline(filestream, line)) {
+  //     return line; 
+  //   }
+  // }
+  // return string(); 
 }
 
 // TODO: Read and return the memory used by a process
@@ -323,6 +326,36 @@ long LinuxParser::UpTime(int pid) {
       std::istringstream linestream(line);
       linestream >> ignore >> ignore >> ignore >> ignore >> value; 
       return value;
+    }
+  } 
+  return 0; 
+}
+
+float LinuxParser::CpuUtilization(int pid) {
+  string line, token, uid;
+  vector<string> tokens;
+  float result;
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  if (filestream.is_open()) {
+    if (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      std::string::size_type sz;
+      long uptime, utime, stime, cutime, cstime, starttime, total_time, seconds;
+      for (int i = 0; i < 22; i++) {
+        linestream >> token;
+        tokens.push_back(token);
+      }
+      uptime = UpTime();
+      utime = std::stol (tokens[13],&sz);
+      stime = std::stol (tokens[14],&sz);
+      cutime = std::stol (tokens[15],&sz);
+      cstime = std::stol (tokens[16],&sz);
+      starttime = std::stol (tokens[21],&sz);
+      total_time = utime + stime + cutime + cstime;
+      seconds = uptime - (starttime * 1.0f / sysconf(_SC_CLK_TCK));
+      result = ((total_time * 1.0f / sysconf(_SC_CLK_TCK)) / seconds);
+      //sysconf(_SC_CLK_TCK)
+      return result;
     }
   } 
   return 0; 

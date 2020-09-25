@@ -18,7 +18,7 @@ Process::Process(int pid) {
     command_ = LinuxParser::Command(pid_);
     ram_=   LinuxParser::Ram(pid_);
     uptime_= LinuxParser::UpTime();
-    //cpuUtilization_= Processor::Utilization();
+    cpuUtilization_= LinuxParser::CpuUtilization(pid_);
 }
 
 // TODO: Return this process's ID
@@ -26,12 +26,6 @@ int Process::Pid() { return pid_; }
 
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() {
-  std::vector <std::string> utilization = LinuxParser::CpuUtilization();
-  float sum = 0.0;
-  for (int i = 0;i < 8; i++) {
-    sum += stof(utilization[i]);
-  }
-  cpuUtilization_ = sum;
   return cpuUtilization_; 
 }
 
